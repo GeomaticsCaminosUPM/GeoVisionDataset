@@ -448,6 +448,18 @@ class GeoDataset:
                 print(f"Creating annotations download path {anns_path}")
                 os.makedirs(anns_path)
 
+            if ann_mode == 'raster':
+                path_helper = os.path.normpath(anns_path+"/semantic")
+                if not os.path.isdir(path_helper):
+                    print(f"Creating annotations download path {path_helper}")
+                    os.makedirs(path_helper)
+
+                if self.instances:
+                    path_helper = os.path.normpath(anns_path+"/instances")
+                    if not os.path.isdir(path_helper):
+                        print(f"Creating annotations download path {path_helper}")
+                        os.makedirs(path_helper)
+                    
         n = 0
         coco_imgs = []
         coco_anns = []
