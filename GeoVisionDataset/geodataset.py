@@ -529,7 +529,7 @@ class GeoDataset:
                         if (allow_empty_anns == False) and (np.max(annotation[0]) == 0):
                             continue 
 
-                        if instances:
+                        if self.instances:
                             rasterlib.save(ann_file_semantic,annotation[0],bounds=bounds,driver='PNG')
                             rasterlib.save(ann_file_instances,annotation[1],bounds=bounds,driver='PNG')
                         else:
