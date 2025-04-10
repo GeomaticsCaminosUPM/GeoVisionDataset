@@ -112,7 +112,12 @@ class Grid:
                 grid_bounds:gpd.GeoSeries=None, tile_in_dataset:float=0, 
                 overlap:float=0): 
         from shapely import box
-
+        if (tile_size is None) and (shape is None):
+            if resolution is None:
+                raise Exception("The kwarg resolution is missing.")
+            else:
+                tile_size = tile_size_from_bounds(dataset_bounds)
+                
         if (type(tile_size) == tuple) and (type(resolution) == tuple):
             if type(shape) == tuple:
                 raise Exception("Too many arguments (shape, resolution and tile_size). One of them should be set to None.")
@@ -122,9 +127,10 @@ class Grid:
             self.resolution = resolution
         elif tile_size is None:
             if shape is None:
-                raise Exception("shape argument not set.")
-            elif resolution is None:
-                raise Exception("Set either resolution or tile_size.")
+                raise Exception("Set either shpae or tile_size.")
+
+            if resolution is None:
+                raise Exception("The kwarg resolution is missing.")
             
             self.tile_size = (shape[0] * resolution[0], shape[1] * resolution[1])
             self.resolution = resolution
