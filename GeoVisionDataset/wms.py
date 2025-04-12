@@ -13,6 +13,25 @@ xyz_service_urls = {
     'OpenStreetMap': 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
 }
 
+def get_service_type(url:str):
+    service_type = None
+    point = gpd.GeoSeries(shapely.Point(0,0),crs=4326)
+    try:
+        build_wms(url)
+        service_type = 'wms' 
+    except:
+        try: 
+            build_wmts(url)
+            service_type = 'wmts'
+        except:
+            try:
+                get_xyz_max_zoom(url,point)
+                service_type = 'xyz'
+            except:
+                service_type = None 
+
+    return service_type
+
 def buffer_in_m(geom,buffer):
     orig_crs = geom.crs
     if orig_crs.is_projected == False:
