@@ -148,7 +148,20 @@ class from_files:
     def save_metadata(self,path):
         None
 
-
+def OGC(url,dataset_bounds,layer:str=None,version:str=None, output_format:str="image/jpeg",style:str=None,tilematrixset:str = None,crs=4326):
+    service_type = wms_lib.get_service_type(url)
+    if service_type == 'wms':
+        return WMS(wms=url,layer=layer,version=version,wms_format=output_format,style=style,crs=crs)
+    elif service_type == 'wmts':
+        return WMTS(wmts=url,layer=layer,version=version,wmts_format=output_format,tilematrixset=tilematrixset)
+    elif service_type == 'xyz':
+        return XYZ(url,dataset_bounds)
+    elif os.path.exists(url):
+        return from_files(url) 
+    else:
+        raise Exception(f"Service type could not be infered or {url} is not a valid path")
+        
+    
 class WMS:
     def __init__(self,wms,layer:str=None,version:str=None, wms_format:str="image/jpeg",style:str=None,crs=4326) -> None:
         from . import wms as wms_lib
