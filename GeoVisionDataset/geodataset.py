@@ -7,13 +7,13 @@ import shapely
 
 from .grid import Grid
 from .image import ImageData
-from .segmentation import SegmentationData 
+from .annotation import AnnotationData 
 
 """TODO: 
 Ipyleaflet basemaps
 contours in coco do not show holes. 
 Add a test dataset option to not save annotation.
-Maybe add segmentation providers for all annotation formats
+Maybe add annotation providers for all annotation formats
 Every log iterations save coco anns so that you can recover them if the download stops
 Allow to load coco anns and add new ones. Implement coco anns with overwrite = False
 """
@@ -168,7 +168,7 @@ def plot_gdf(img,gdf,bounds,n_classes=50):
     return None
 
 class GeoDataset:
-    def __init__(self,grid:Grid,image,segmentation=None,n_classes=None,hide_outside:bool=False,
+    def __init__(self,grid:Grid,image,annotation=None,n_classes=None,hide_outside:bool=False,
                     min_area:float=0,min_object_coverage:float=0,min_tile_coverage:float=0,instances:bool=True) -> None:
 
         self.min_area = min_area 
@@ -178,13 +178,13 @@ class GeoDataset:
 
         self.ImageDataset = ImageData(image) 
         
-        if segmentation is None:
+        if annotation is None:
             self.SegDataset = None 
         else:
             if n_classes is None:
                 raise Exception("Please input the number of semantic classes at the n_classes keyword.")
 
-            self.SegDataset = SegmentationData(segmentation,background_index=0,all_touched=True)
+            self.SegDataset = AnnotationData(annotation,background_index=0,all_touched=True)
             self.n_classes = n_classes
 
         self.dataset_bounds = grid.dataset_bounds 
@@ -232,7 +232,7 @@ class GeoDataset:
 
     def get_annotation(self,tile:int=None,bounds:gpd.GeoSeries|gpd.GeoDataFrame=None,ann_mode='raster',instances:bool=None,
                                             min_area:float=None,min_object_coverage:float=None,min_tile_coverage:float=None):
-        from . import segmentation 
+        from . import annotation 
 
         if min_area is None:
             min_area = self.min_area
@@ -261,23 +261,23 @@ class GeoDataset:
         if ann_mode == 'coco':
             instance_ids = np.arange(len(geodataframe_ann))
             semantic_class = list(geodataframe_ann['semantic_class'])
-            raster_ann_instances = segmentation.gdf_to_raster_ann_instances(geodataframe_ann,self.shape,bounds,background_index=self.background_index) 
-            anns = segmentation.raster_to_coco_ann(raster_ann_instances,semantic_class,instance_ids)
+            raster_ann_instances = annotation.gdf_to_raster_ann_instances(geodataframe_ann,self.shape,bounds,background_index=self.background_index) 
+            anns = annotation.raster_to_coco_ann(raster_ann_instances,semantic_class,instance_ids)
             return anns, bounds
 
         elif ann_mode == 'geodataframe':
             return geodataframe_ann, bounds
 
         elif ann_mode == 'raster':
-            semantic_raster = segmentation.gdf_to_raster_ann_semantic(geodataframe_ann,self.shape,bounds,background_index=self.background_index)
+            semantic_raster = annotation.gdf_to_raster_ann_semantic(geodataframe_ann,self.shape,bounds,background_index=self.background_index)
             if instances:
-                instance_raster = segmentation.gdf_to_raster_ann_instances(geodataframe_ann,self.shape,bounds,background_index=self.background_index)
+                instance_raster = annotation.gdf_to_raster_ann_instances(geodataframe_ann,self.shape,bounds,background_index=self.background_index)
                 return (semantic_raster, instance_raster), bounds
             else:
                 return semantic_raster, bounds
 
         elif ann_mode == 'maskformer':
-            maskformer = segmentation.gdf_to_maskformer_ann(geodataframe_ann,self.shape,bounds,background_index=self.background_index)
+            maskformer = annotation.gdf_to_maskformer_ann(geodataframe_ann,self.shape,bounds,background_index=self.background_index)
             return maskformer, bounds
 
         else:
