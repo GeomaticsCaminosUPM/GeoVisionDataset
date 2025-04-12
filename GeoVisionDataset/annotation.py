@@ -151,7 +151,7 @@ def gdf_to_maskformer_ann(geodataframe_ann:gpd.GeoDataFrame,shape,bounds,backgro
 
 
 
-class SegmentationData:
+class AnnotationData:
     def __init__(self, ann_obj, background_index:int = 0, all_touched:bool = False) -> None:
         if type(ann_obj) != list:
             ann_obj = [ann_obj]
