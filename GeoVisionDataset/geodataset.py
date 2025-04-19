@@ -179,12 +179,12 @@ class GeoDataset:
         self.ImageDataset = ImageData(image) 
         
         if annotation is None:
-            self.SegDataset = None 
+            self.AnnDataset = None 
         else:
             if n_classes is None:
                 raise Exception("Please input the number of semantic classes at the n_classes keyword.")
 
-            self.SegDataset = AnnotationData(annotation,background_index=0,all_touched=True)
+            self.AnnDataset = AnnotationData(annotation,background_index=0,all_touched=True)
             self.n_classes = n_classes
 
         self.dataset_bounds = grid.dataset_bounds 
@@ -216,8 +216,8 @@ class GeoDataset:
         else:
             self.hide_outside_bounds = None
 
-        if self.SegDataset is not None:
-            self.background_index = self.SegDataset.background_index
+        if self.AnnDataset is not None:
+            self.background_index = self.AnnDataset.background_index
         else:
             self.background_index = 0
 
@@ -252,7 +252,7 @@ class GeoDataset:
 
             bounds = self.grid.geometry[tile:tile+1].reset_index(drop=True).copy()
 
-        geodataframe_ann = self.SegDataset.gdf_ann(bounds,dataset_bounds=self.hide_outside_bounds,
+        geodataframe_ann = self.AnnDataset.gdf_ann(bounds,dataset_bounds=self.hide_outside_bounds,
                             min_area=min_area, min_object_coverage=min_object_coverage,min_tile_coverage=min_tile_coverage)
 
         if not instances:
@@ -355,8 +355,8 @@ class GeoDataset:
         elif type(bounds) == int: 
             bounds = self.grid.geometry[bounds:bounds+1] 
 
-        if (self.SegDataset is not None) and (mode != 'grid') and (mode != 'image'):
-            geometry = self.SegDataset.geometry(bounds=bounds)
+        if (self.AnnDataset is not None) and (mode != 'grid') and (mode != 'image'):
+            geometry = self.AnnDataset.geometry(bounds=bounds)
             if len(geometry) > 0:
                 if geometry is not None:
                     if type(geometry) is gpd.GeoSeries:
@@ -435,14 +435,17 @@ class GeoDataset:
         if ann_mode == 'coco':
             overwrite = True #######!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-        if self.ImageDataset is not None:     
+        if self.ImageDataset is not None:   
+            img_path = os.path.normpath(img_path)
             if not os.path.isdir(img_path):
                 print(f"Creating image download path {img_path}")
                 os.makedirs(img_path)   
 
-        if self.SegDataset is not None: 
+        if self.AnnDataset is not None: 
             if anns_path is None:
                 anns_path = img_path 
+
+            anns_path = os.path.normpath(anns_path)
 
             if not os.path.isdir(anns_path):
                 print(f"Creating annotations download path {anns_path}")
@@ -490,7 +493,7 @@ class GeoDataset:
                     bounds = rasterlib.bounds(img_file)
 
 
-            if self.SegDataset is not None:
+            if self.AnnDataset is not None:
                 if ann_mode == 'coco': 
                     ann_file = os.path.normpath(anns_path + "/annotations_coco.json")
                 elif ann_mode == 'geodataframe':
@@ -596,7 +599,7 @@ class GeoDataset:
 
         self.ImageDataset.save_metadata(img_path)
 
-        if self.SegDataset is not None:
+        if self.AnnDataset is not None:
             if anns_path != img_path:
                 grid_bounds = self.grid_bounds
                 dataset_bounds = self.dataset_bounds
@@ -615,7 +618,7 @@ class GeoDataset:
 
                 print(f"Dataset bounds saved as {file}")  
 
-            self.SegDataset.save_metadata(anns_path)              
+            self.AnnDataset.save_metadata(anns_path)              
 
         
 
