@@ -146,11 +146,14 @@ class from_files:
     
         img = raster.rio_to_pil(img)
         image_url = pil_to_data_url(img)
-    
+
+        minx, miny, maxx, maxy = img_bounds.total_bounds
+        img_bounds_list = [[miny, minx], [maxy, maxx]]
+
         img_overlay = ImageOverlay(
             name="Image",
             image=image_url,
-            bounds=img_bounds,  # Make sure this is [[south, west], [north, east]]
+            bounds=img_bounds_list,  # Make sure this is [[south, west], [north, east]]
             opacity=0.6
         )
         return img_overlay
