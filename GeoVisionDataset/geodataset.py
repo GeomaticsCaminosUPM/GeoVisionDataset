@@ -262,6 +262,9 @@ class GeoDataset:
             instance_ids = np.arange(len(geodataframe_ann))
             semantic_class = list(geodataframe_ann['semantic_class'])
             raster_ann_instances = annotation.gdf_to_raster_ann_instances(geodataframe_ann,self.shape,bounds,background_index=self.background_index) 
+            if tile is None: 
+                tile = -999 
+                
             anns = annotation.raster_to_coco_ann(tile,raster_ann_instances,semantic_class,instance_ids)
             return anns, bounds
 
