@@ -29,13 +29,13 @@ def crop_gdf(G,g):
     resG = resG[resG.is_valid].reset_index(drop=True)
     return resG
 
-def _coco_annotation(binary_mask,semantic_class,instance_id):
+def _coco_annotation(image_id,binary_mask,semantic_class,instance_id):
     from pycocotools import mask as mask_tools
     fortran_mask = np.asfortranarray(binary_mask.astype(np.uint8))
     encoded_mask = mask_tools.encode(fortran_mask)
     area = mask_tools.area(encoded_mask)
     bbox = mask_tools.toBbox(encoded_mask)
-    annotation = {'id':int(instance_id),'category_id':int(semantic_class),'bbox':[float(bbox[0]),float(bbox[1]),float(bbox[2]),float(bbox[3])],'area':float(area),'iscrowd':0,
+    annotation = {'id':int(instance_id),'category_id':int(semantic_class),'image_id':int(image_id),'bbox':[float(bbox[0]),float(bbox[1]),float(bbox[2]),float(bbox[3])],'area':float(area),'iscrowd':0,
                     'segmentation':{'counts':encoded_mask['counts'].decode('utf-8'),'size':[int(encoded_mask["size"][0]),int(encoded_mask["size"][1])]}}
     
     return annotation 
@@ -112,7 +112,7 @@ def gdf_to_raster_ann_instances(geodataframe_ann:gpd.GeoDataFrame,shape,bounds,b
 
     return raster
 
-def raster_to_coco_ann(ann_instance, semantic_class, instance_ids):
+def raster_to_coco_ann(image_id, ann_instance, semantic_class, instance_ids):
     #from torch.nn.functional import one_hot 
     #from torch import tensor, long
 
@@ -133,7 +133,7 @@ def raster_to_coco_ann(ann_instance, semantic_class, instance_ids):
     if (binary_masks.shape[2]-1) != len(instance_ids):
         raise Exception(f"Len of binary_masks is {(binary_masks.shape[2])-1} but len of instance_ids is {len(instance_ids)}")
 
-    annotations = [_coco_annotation(binary_masks[:,:,i+1],semantic_class[i],instance_ids[i]) for i in range(binary_masks.shape[2]-1)]
+    annotations = [_coco_annotation(image_id,binary_masks[:,:,i+1],semantic_class[i],instance_ids[i]) for i in range(binary_masks.shape[2]-1)]
     
     return annotations
 
