@@ -262,7 +262,7 @@ class GeoDataset:
             instance_ids = np.arange(len(geodataframe_ann))
             semantic_class = list(geodataframe_ann['semantic_class'])
             raster_ann_instances = annotation.gdf_to_raster_ann_instances(geodataframe_ann,self.shape,bounds,background_index=self.background_index) 
-            anns = annotation.raster_to_coco_ann(raster_ann_instances,semantic_class,instance_ids)
+            anns = annotation.raster_to_coco_ann(tile,raster_ann_instances,semantic_class,instance_ids)
             return anns, bounds
 
         elif ann_mode == 'geodataframe':
@@ -528,15 +528,15 @@ class GeoDataset:
                         if len(annotation) > 0:
                             instance_ids = np.arange(len(coco_anns),len(coco_anns)+len(annotation))
                             semantic_classes = []
-                            for i in range(len(annotation)):
-                                annotation[i]['id'] = int(instance_ids[i])
-                                semantic_classes.append(int(annotation[i]['category_id']))
+                            for j in range(len(annotation)):
+                                annotation[j]['id'] = int(instance_ids[j])
+                                semantic_classes.append(int(annotation[j]['category_id']))
 
                             coco_anns += annotation
                         elif allow_empty_anns == False:
                             continue
 
-                        image_dict = {'image_id':int(i),'file_name':str(img_path),'height':int(self.shape[0]),'width':int(self.shape[1])}
+                        image_dict = {'id':int(i),'file_name':str(img_file),'height':int(self.shape[0]),'width':int(self.shape[1])}
                         coco_imgs.append(image_dict)
                         all_labels = all_labels + list(np.unique(semantic_classes))
 
@@ -573,7 +573,7 @@ class GeoDataset:
                 json_dict = {
                     'images' : coco_imgs,
                     'annotation' : coco_anns,
-                    'categories' : [{'id' : int(i)} for i in np.unique(all_labels)]
+                    'categories' : [{'id' : int(j)} for j in np.unique(all_labels)]
                 }
                 json_file = os.path.normpath(anns_path + "/annotations_coco.json")
                 with open(json_file, "w") as file:
