@@ -539,7 +539,12 @@ class GeoDataset:
                         elif allow_empty_anns == False:
                             continue
 
-                        image_dict = {'id':int(i),'file_name':str(img_file),'height':int(self.shape[0]),'width':int(self.shape[1])}
+                        image_dict = {
+                            'id':int(i),
+                            'file_name':str(os.path.normpath('images/' + os.path.basename(img_file))),
+                            'height':int(self.shape[0]),
+                            'width':int(self.shape[1])
+                        }
                         coco_imgs.append(image_dict)
                         all_labels = all_labels + list(np.unique(semantic_classes))
 
