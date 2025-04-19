@@ -114,33 +114,44 @@ class from_files:
         img = img.resize(shape)
         return img, img_bounds
     
-    def basemap(self,bounds:gpd.GeoSeries=None):
+    def basemap(self, bounds: gpd.GeoSeries = None):
         from folium.raster_layers import ImageOverlay
+        from io import BytesIO
+        import base64
+        import warnings
+    
+        def pil_to_data_url(img):
+            buffer = BytesIO()
+            img.save(buffer, format="PNG")
+            encoded = base64.b64encode(buffer.getvalue()).decode("utf-8")
+            return f"data:image/png;base64,{encoded}"
+    
         if bounds is None:
             img_files = self.img_files
-            img, img_bounds,_ = raster.merge(img_files)
-            img = raster.rio_to_pil(img)
+            img, img_bounds, _ = raster.merge(img_files)
         else:
-            if len(bounds) > 1: 
-                bounds = gpd.GeoSeries(bounds.union_all(),crs=bounds.crs)
-        
+            if len(bounds) > 1:
+                bounds = gpd.GeoSeries([bounds.unary_union], crs=bounds.crs)
+    
             if bounds.crs != self.crs:
                 bounds = bounds.to_crs(self.crs)
-
-            img_files = list(self.img_bounds['filename'][self.img_bounds.intersects(bounds[0])])
-            
-            if len(img_files) == 0:
-                warnings.warn(f"No images found for bounds {str(bounds[0])}",UserWarning)
+    
+            intersecting = self.img_bounds[self.img_bounds.intersects(bounds[0])]
+            if intersecting.empty:
+                warnings.warn(f"No images found for bounds {str(bounds[0])}", UserWarning)
                 return None, None
-
-            img, img_bounds,_ = raster.merge(img_files,bounds=bounds)
-            img = raster.rio_to_pil(img)
-
+    
+            img_files = list(intersecting['filename'])
+            img, img_bounds, _ = raster.merge(img_files, bounds=bounds)
+    
+        img = raster.rio_to_pil(img)
+        image_url = pil_to_data_url(img)
+    
         img_overlay = ImageOverlay(
-                name="Image",
-                image=img,
-                bounds=img_bounds,
-                opacity=0.6
+            name="Image",
+            image=image_url,
+            bounds=img_bounds,  # Make sure this is [[south, west], [north, east]]
+            opacity=0.6
         )
         return img_overlay
 
