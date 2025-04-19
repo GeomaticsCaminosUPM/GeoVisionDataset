@@ -580,7 +580,7 @@ class GeoDataset:
             if overwrite or not(os.path.isfile(anns_path + "/annotations_coco.json")):
                 json_dict = {
                     'images' : coco_imgs,
-                    'annotation' : coco_anns,
+                    'annotations' : coco_anns,
                     'categories' : [{'id' : int(j)} for j in np.unique(all_labels)]
                 }
                 json_file = os.path.normpath(anns_path + "/annotations_coco.json")
