@@ -115,7 +115,7 @@ class from_files:
         return img, img_bounds
     
     def basemap(self,bounds:gpd.GeoSeries=None):
-        from folium import ImageOverlay
+        from folium.raster_layers import ImageOverlay
         if bounds is None:
             img_files = self.img_files
             img, img_bounds,_ = raster.merge(img_files)
