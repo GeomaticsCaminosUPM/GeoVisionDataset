@@ -529,7 +529,7 @@ class GeoDataset:
                         
                     if ann_mode == 'coco':
                         if len(annotation) > 0:
-                            instance_ids = np.arange(1,len(annotation)+1)#np.arange(len(coco_anns),len(coco_anns)+len(annotation))
+                            instance_ids = np.arange(len(coco_anns),len(coco_anns)+len(annotation))
                             semantic_classes = []
                             for j in range(len(annotation)):
                                 annotation[j]['id'] = int(instance_ids[j])
