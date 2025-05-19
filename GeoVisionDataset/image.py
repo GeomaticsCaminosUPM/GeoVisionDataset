@@ -109,8 +109,35 @@ class from_files:
             warnings.warn(f"No images found for bounds {str(bounds.union_all())}",UserWarning)
             return None, None
 
-        img, img_bounds,_ = raster.merge(img_files,bounds=bounds)
-        img = raster.rio_to_pil(img)
+        img, img_bounds,transform = raster.merge(img_files,bounds=bounds)
+
+        width = abs(img_bounds.total_bounds[2] - img_bounds.total_bounds[0])
+        height = abs(img_bounds.total_bounds[3] - img_bounds.total_bounds[1])
+        
+        # Compute bounds in map units
+        pixel_width = transform.a
+        pixel_height = transform.e
+
+        extent_x = abs(pixel_width * width)
+        extent_y = abs(pixel_height * height)
+
+        # If the pixel layout (width/height) doesn't match the map extent
+        rotated = (width > height) != (extent_x > extent_y)
+
+        if rotated: 
+            from PIL import Image
+            if len(arr.shape) == 2:
+                img = Image.fromarray(np.transpose(img), mode='L')
+            elif arr.shape[0] == 1:
+                img = Image.fromarray(np.transpose(img[0]), mode='L')
+            elif arr.shape[0] == 4:
+                img = Image.fromarray(np.transpose(img, (2, 1, 0)), mode='RGBA')
+            else:
+                img = Image.fromarray(np.transpose(img, (2, 1, 0)), mode='RGB')
+        
+        else:
+            img = raster.rio_to_pil(img)
+            
         img = img.resize(shape)
         return img, img_bounds
     
