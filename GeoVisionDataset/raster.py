@@ -8,13 +8,15 @@ import shapely
 def rio_to_pil(arr):
     from PIL import Image
     if len(arr.shape) == 2:
-        pil_image = Image.fromarray(np.transpose(arr), mode='L')
+        pil_image = Image.fromarray(arr, mode='L')
     elif arr.shape[0] == 1:
-        pil_image = Image.fromarray(np.transpose(arr[0]), mode='L')
+        pil_image = Image.fromarray(arr[0], mode='L')
     elif arr.shape[0] == 4:
-        pil_image = Image.fromarray(np.transpose(arr, (2, 1, 0)), mode='RGBA')
+        arr = np.moveaxis(arr, 0, -1)
+        pil_image = Image.fromarray(arr, mode='RGBA')
     else:
-        pil_image = Image.fromarray(np.transpose(arr, (2, 1, 0)), mode='RGB')
+        arr = np.moveaxis(arr, 0, -1)
+        pil_image = Image.fromarray(arr, mode='RGB')
 
     return pil_image
 
@@ -215,11 +217,11 @@ def merge(input_paths,bounds:gpd.GeoSeries=None,get_bounds:bool=False,get_transf
     _,width,height = mosaic.shape
 
     # Calculate bounds using array_bounds
-    img_bounds = rio.transform.array_bounds(height, width, out_trans)
+    img_bounds = rio.transform.array_bounds(width, height, out_trans)
     img_bounds = gpd.GeoSeries(shapely.geometry.box(*img_bounds),crs=crs)
     #if bounds is not None:
     #    img_bounds = img_bounds.to_crs(orig_crs)
-
+    
     return mosaic, img_bounds, out_trans  
 
 def crop(input_path, bounds:gpd.GeoSeries):
@@ -487,6 +489,9 @@ def save(output_path:str, arr, bounds:gpd.GeoSeries, driver:str = "JPEG"):
         transform=transform,
     ) as dst:
         dst.write(arr)  
+
+
+
 
 
 
