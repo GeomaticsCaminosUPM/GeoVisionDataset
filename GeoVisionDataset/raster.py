@@ -453,8 +453,13 @@ def save(output_path:str, arr, bounds:gpd.GeoSeries, driver:str = "JPEG"):
         raise Exception(f"shape of array is {arr.shape} but is should have the shape (n_bands,x_shape,y_shape)")
 
     if n_bands > 3: 
-        raise Exception("The array should have the shape (n_bands,x_shape,y_shape)")
-        
+        arr = arr[:,:,:-1]
+        n_bands = arr.shape[0]
+        y_shape = arr.shape[1]
+        x_shape = arr.shape[2]
+        if n_bands > 3:
+            raise Exception("The array should have the shape (n_bands,x_shape,y_shape)")
+            
     # Calculate the pixel size
     x_pixel_size = (maxx - minx) / x_shape
     y_pixel_size = (maxy - miny) / y_shape
