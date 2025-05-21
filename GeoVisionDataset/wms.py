@@ -205,6 +205,7 @@ def build_wms(wms,version:str=None):
             wms = WebMapService(wms,version=version)
         except:
             # Patch the function
+            from owslib.map import wms111
             _orig_init = wms111.ContentMetadata.__init__
             def safe_init(self, elem, *args, **kwargs):
                 if 'queryable' in elem.attrib and elem.attrib['queryable'] == '':
